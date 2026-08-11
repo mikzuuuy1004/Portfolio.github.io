@@ -71,6 +71,62 @@ document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('videoModal');
     const modalTitle = document.getElementById('videoModalTitle');
     const modalBody = document.getElementById('videoModalBody');
+    const heroOrb = document.querySelector('.hero-orb');
+    const heroSection = document.getElementById('home');
+
+    function updateHeroOrb(event) {
+        if (!heroOrb || !heroSection) return;
+
+        const rect = heroSection.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        heroOrb.style.left = `${x}px`;
+        heroOrb.style.top = `${y}px`;
+
+        const orbRadius = 90;
+        const orbRect = {
+            left: x - orbRadius,
+            right: x + orbRadius,
+            top: y - orbRadius,
+            bottom: y + orbRadius
+        };
+
+        const textElements = [
+            document.querySelector('.hero-tag'),
+            document.querySelector('.hero-title'),
+            ...document.querySelectorAll('.hero-desc')
+        ];
+
+        textElements.forEach(el => {
+            if (!el) return;
+            const elRect = el.getBoundingClientRect();
+            const relativeRect = {
+                left: elRect.left - rect.left,
+                right: elRect.right - rect.left,
+                top: elRect.top - rect.top,
+                bottom: elRect.bottom - rect.top
+            };
+            const overlap =
+                orbRect.left < relativeRect.right &&
+                orbRect.right > relativeRect.left &&
+                orbRect.top < relativeRect.bottom &&
+                orbRect.bottom > relativeRect.top;
+            el.classList.toggle('orb-target-highlight', overlap);
+        });
+    }
+
+    if (heroSection) {
+        heroSection.addEventListener('mousemove', updateHeroOrb);
+        heroSection.addEventListener('mouseleave', function() {
+            if (!heroOrb) return;
+            heroOrb.style.left = '50%';
+            heroOrb.style.top = '50%';
+            document.querySelector('.hero-tag')?.classList.remove('orb-target-highlight');
+            document.querySelector('.hero-title')?.classList.remove('orb-target-highlight');
+            document.querySelectorAll('.hero-desc').forEach(el => el.classList.remove('orb-target-highlight'));
+        });
+    }
 
     function renderVideoContent(videoSrc, videoFiles, title) {
         modalTitle.textContent = title || 'Three Parts of Video';
